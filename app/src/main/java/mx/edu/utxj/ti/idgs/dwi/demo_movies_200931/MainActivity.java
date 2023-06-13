@@ -86,8 +86,10 @@ public  class MainActivity extends AppCompatActivity {
                                         etactores.setText(response.getString("actores"));
                                         etrating.setText(String.valueOf(response.getInt("rating")));
                                         etdescrpcion.setText(response.getString("descripcion"));
+                                        listMovies()
                                     } catch (JSONException e) {
-                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                     Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_LONG).show();
+                                        
                                     }
                                 }
                             }
@@ -96,7 +98,7 @@ public  class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                               Toast.makeText(MainActivity.this, "Obra encontrada con un fallo de internet", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
@@ -122,14 +124,14 @@ public  class MainActivity extends AppCompatActivity {
                 }
                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                         Request.Method.POST,
-                        url + "insert/",
+                        url + "insertar/",
                         producto,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
                                 try {
-                                    if (response.getString("status").equals("Producto insertado")) {
-                                        Toast.makeText(MainActivity.this, "Producto insertado con ÉXITO!", Toast.LENGTH_SHORT).show();
+                                    if (response.getString("status").equals("Pelicula insertada")) {
+                                        Toast.makeText(MainActivity.this, "Pelicula insertada con ÉXITO!", Toast.LENGTH_SHORT).show();
                                         ettitulo.setText("");
                                         etdirector.setText("");
                                         etaño.setText("");
@@ -142,14 +144,14 @@ public  class MainActivity extends AppCompatActivity {
                                         listMovies();
                                     }
                                 } catch (JSONException e) {
-                                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                     Toast.makeText(MainActivity.this,"Error al Guardar", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                               Toast.makeText(MainActivity.this, "Error en el servidor", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
