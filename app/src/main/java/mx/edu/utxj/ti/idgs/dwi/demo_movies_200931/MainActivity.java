@@ -44,7 +44,7 @@ public  class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> origenDatos = new ArrayList<String>();
     private ArrayAdapter<String> adapter;
-    private String url = "http://192.168.0.100:3300/";
+    private String url = "http://10.10.62.24:3300/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +86,7 @@ public  class MainActivity extends AppCompatActivity {
                                         etactores.setText(response.getString("actores"));
                                         etrating.setText(String.valueOf(response.getInt("rating")));
                                         etdescrpcion.setText(response.getString("descripcion"));
-                                        listMovies()
+                                        listMovies();
                                     } catch (JSONException e) {
                                      Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_LONG).show();
                                         
@@ -110,55 +110,258 @@ public  class MainActivity extends AppCompatActivity {
         btnGuardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                JSONObject producto = new JSONObject();
+                JSONObject peliculass = new JSONObject();
                 try {
-                    producto.put("titulo", ettitulo.getText().toString());
-                    producto.put("director", etdirector.getText().toString());
-                    producto.put("año", Float.parseFloat(etaño.getText().toString()));
-                    producto.put("actores", etdirector.getText().toString());
-                    producto.put("rating", Float.parseFloat(etrating.getText().toString()));
-                    producto.put("descripcion", etdescrpcion.getText().toString());
-                    producto.put("matricula", Float.parseFloat(etmatricula.getText().toString()));
-                } catch (JSONException e) {
-                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    peliculass.put("titulo", ettitulo.getText().toString());
+                    peliculass.put("director", etdirector.getText().toString());
+                    peliculass.put("año", etaño.getText().toString());
+                    peliculass.put("actores", etdirector.getText().toString());
+                    peliculass.put("rating", etrating.getText().toString());
+                    peliculass.put("descripcion", etdescrpcion.getText().toString());
+                    peliculass.put("matricula", etmatricula.getText().toString());
+                }catch (JSONException error){
+                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
                 }
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                JsonObjectRequest salvar = new JsonObjectRequest(
                         Request.Method.POST,
-                        url + "insertar/",
-                        producto,
+                        url+"insertar",
+                        peliculass,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                //Toast.makeText(MainActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                                try {
+                                    if (response.getString("status").equals("Obra Guardada"))
+                                        Toast.makeText(MainActivity.this, "¡Obra Guardada con exito", Toast.LENGTH_SHORT).show();
+                                    ettitulo.setText("");
+                                    etdirector.setText("");
+                                    etaño.setText("");
+                                    etactores.setText("");
+                                    etrating.setText("");
+                                    etdescrpcion.setText("");
+                                    etmatricula.setText("");
+                                    origenDatos.clear();
+                                    adapter.clear();
+                                    listMovies();
+                                } catch (JSONException e){
+                                    Toast.makeText(MainActivity.this,"PELI GUARDADA", Toast.LENGTH_SHORT).show();
+                                }listMovies();
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(MainActivity.this, "PELI GUARDADA", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+                colaPeticiones.add(salvar);
+            }
+        });
+
+
+
+
+        btnActualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (etmatricula.getText().toString().isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Primero use el BOTÓN BUSCAR!", Toast.LENGTH_SHORT).show();
+                } else {
+                    JSONObject peliupdate = new JSONObject();
+                    try {
+                        peliupdate.put("numcampeon", etmatricula.getText().toString());
+
+
+
+                    } catch (JSONException e) {
+                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    JsonObjectRequest actualizar = new JsonObjectRequest(
+                            Request.Method.PUT,
+                            url + "actualizar/" + etmatricula.getText().toString(),
+                            peliupdate,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        if (response.getString("status").equals("peli Actualizada")) {
+                                            Toast.makeText(MainActivity.this, " peli actualizada!", Toast.LENGTH_SHORT).show();
+                                            etmatricula.setText("");
+                                            ettitulo.setText("");
+                                            etdirector.setText("");
+                                            etaño.setText("");
+                                            etactores.setText("");
+                                            etrating.setText("");
+                                            etdescrpcion.setText("");
+                                            origenDatos.clear();
+                                            adapter.clear();
+
+                                        } else if (response.getString("status").equals("Not Found")) {
+                                            Toast.makeText(MainActivity.this, "Campeón no encontrado", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    } catch (JSONException e) {
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }listMovies();
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                    colaPeticiones.add(actualizar);
+                }
+            }
+        });
+
+
+
+/*
+        btnActualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                JSONObject actualizar = new JSONObject();
+                try {
+                    actualizar.put("matricula", etmatricula.getText().toString());
+                    actualizar.put("titulo", ettitulo.getText().toString());
+                    actualizar.put("director", etdirector.getText().toString());
+                    actualizar.put("año", etaño.getText().toString());
+                    actualizar.put("actores", etactores.getText().toString());
+                    actualizar.put("rating", etrating.getText().toString());
+                    actualizar.put("descripcion", etdescrpcion.getText().toString());
+
+                }catch(JSONException error){
+                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                }
+                JsonObjectRequest actualizapeli = new JsonObjectRequest(
+                        Request.Method.PUT,
+                        url + "actualizar/" + etmatricula.getText().toString(),
+                        9actualizar,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
                                 try {
-                                    if (response.getString("status").equals("Pelicula insertada")) {
-                                        Toast.makeText(MainActivity.this, "Pelicula insertada con ÉXITO!", Toast.LENGTH_SHORT).show();
-                                        ettitulo.setText("");
-                                        etdirector.setText("");
-                                        etaño.setText("");
-                                        etactores.setText("");
-                                        etrating.setText("");
-                                        etdescrpcion.setText("");
-                                        etmatricula.setText("");
-                                        origenDatos.clear();
-                                        adapter.clear();
-                                        listMovies();
-                                    }
+                                    if (response.getString("status").equals("Obra Actualizada"))
+                                        Toast.makeText(MainActivity.this, "Obra Actualizada exitosamente", Toast.LENGTH_SHORT).show();
+                                    etmatricula.setText("");
+                                    ettitulo.setText("");
+                                    etdirector.setText("");
+                                    etaño.setText("");
+                                    etactores.setText("");
+                                    etrating.setText("");
+                                    etdescrpcion.setText("");
+                                    origenDatos.clear();
+                                    adapter.clear();
+
                                 } catch (JSONException e) {
-                                     Toast.makeText(MainActivity.this,"Error al Guardar", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Error al actualizar", Toast.LENGTH_SHORT).show();
+                                }
+                                listMovies();;
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+                colaPeticiones.add(actualizapeli);
+            }
+        });
+
+*/
+
+
+
+
+
+
+        btnEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (etmatricula.getText().toString().isEmpty()) {
+                    Toast.makeText(MainActivity.this, "ingrese la matricula", Toast.LENGTH_SHORT).show();
+                } else {
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.DELETE,
+                            url + "delete/" + etmatricula.getText().toString(),
+                            null,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        if (response.getString("status").equals("peli eliminada")) {
+                                            Toast.makeText(MainActivity.this, "pelicula eliminada!", Toast.LENGTH_SHORT).show();
+                                            etmatricula.setText("");
+                                            adapter.clear();
+                                            lvmovies.setAdapter(adapter);
+                                            listMovies();
+                                        } else if (response.getString("status").equals("Not Found")) {
+                                            Toast.makeText(MainActivity.this, "peli no encontrada", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    } catch (JSONException e) {
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }listMovies();
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                    colaPeticiones.add(jsonObjectRequest);
+                }
+            }
+        });
+
+
+
+    }
+
+/*
+        btnEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                JsonObjectRequest eliminapeli = new JsonObjectRequest(
+                        Request.Method.DELETE,
+                        url+"delete/"+etmatricula.getText().toString(),
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                try {
+                                if (response.has("status")) {
+                                    Toast.makeText(MainActivity.this, "Pelicula eliminada", Toast.LENGTH_SHORT).show();
+                                } else if (response.getString("status").equals("Not Found")) {
+                                    Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_SHORT).show();
+                                }
+
+                                } catch (JSONException e) {
+                                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                               Toast.makeText(MainActivity.this, "Error en el servidor", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, "Puede que no exista el id , error al eliminar.", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
-                colaPeticiones.add(jsonObjectRequest);
+                colaPeticiones.add(eliminapeli);
             }
-        });
-    }
+        });*/
+
+
+
 
 
 
