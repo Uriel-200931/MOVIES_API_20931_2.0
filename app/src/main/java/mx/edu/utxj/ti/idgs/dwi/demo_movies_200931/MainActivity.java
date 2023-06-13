@@ -98,7 +98,7 @@ public  class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                               Toast.makeText(MainActivity.this, "Obra encontrada con un fallo de internet", Toast.LENGTH_LONG).show();
+                               Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
