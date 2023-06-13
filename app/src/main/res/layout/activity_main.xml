@@ -9,10 +9,10 @@
 
 
   <EditText
-      android:id="@+id/etMatricula"
+      android:id="@+id/etCodigoBarras"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:hint="Matricula"
+      android:hint="Codigo de barras"
       android:layout_marginTop="3dp"
       android:textAlignment="center"
 
@@ -24,7 +24,7 @@
       android:hint="Titulo"
       android:layout_marginTop="3dp"
       android:textAlignment="center"
-      android:layout_below="@id/etMatricula"
+      android:layout_below="@id/etCodigoBarras"
       />
   <EditText
       android:id="@+id/etDirector"
@@ -46,24 +46,16 @@
       android:layout_below="@id/etDirector"
       />
 
+
   <EditText
-      android:id="@+id/etActores"
+      android:id="@+id/etGenero"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:hint="Actores"
-      android:layout_marginTop="3dp"
-      android:textAlignment="center"
-      android:layout_below="@id/etAño"
-      />
-  <EditText
-      android:id="@+id/etRating"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:hint="Rating"
+      android:hint="Genero"
       android:layout_marginTop="3dp"
       android:layout_marginBottom="20dp"
       android:textAlignment="center"
-      android:layout_below="@id/etActores"
+      android:layout_below="@id/etAño"
       />
   <EditText
       android:id="@+id/etDescrpcion"
@@ -73,7 +65,7 @@
       android:layout_marginTop="3dp"
       android:layout_marginBottom="20dp"
       android:textAlignment="center"
-      android:layout_below="@id/etRating"
+      android:layout_below="@id/etGenero"
       />
 
   <Button

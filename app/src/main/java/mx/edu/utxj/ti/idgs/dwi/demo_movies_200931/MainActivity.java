@@ -31,12 +31,11 @@ public  class MainActivity extends AppCompatActivity {
     private Button btnActualizar;
     private Button btnEliminar;
 
-    private EditText etmatricula;
+    private EditText etcodigoBarras;
     private EditText ettitulo;
     private EditText etdirector;
     private EditText etaño;
-    private EditText etactores;
-    private EditText etrating;
+    private EditText etgenero;
     private EditText etdescrpcion;
     private ListView lvmovies;
     private RequestQueue colaPeticiones;
@@ -44,7 +43,7 @@ public  class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> origenDatos = new ArrayList<String>();
     private ArrayAdapter<String> adapter;
-    private String url = "http://10.10.62.24:3300/";
+    private String url = "http://192.168.0.101:3300/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +53,11 @@ public  class MainActivity extends AppCompatActivity {
         btnActualizar = findViewById(R.id.btnUpdate);
         btnBuscar = findViewById(R.id.btnSearch);
         btnEliminar = findViewById(R.id.btnDelete);
-        etmatricula = findViewById(R.id.etMatricula);
+        etcodigoBarras = findViewById(R.id.etCodigoBarras);
         ettitulo = findViewById(R.id.etTitulo);
         etdirector = findViewById(R.id.etDirector);
         etaño = findViewById(R.id.etAño);
-        etactores = findViewById(R.id.etActores);
-        etrating = findViewById(R.id.etRating);
+        etgenero= findViewById(R.id.etGenero);
         etdescrpcion = findViewById(R.id.etDescrpcion);
         lvmovies = findViewById(R.id.lvMovies);
         colaPeticiones = Volley.newRequestQueue(this);
@@ -70,26 +68,27 @@ public  class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 JsonObjectRequest peticion = new JsonObjectRequest(
                         Request.Method.GET,
-                        url +etmatricula.getText().toString(),
+                        url  + etcodigoBarras.getText().toString(),
                         null,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
                                 if (response.has("status"))
-                                    Toast.makeText(MainActivity.this, "pelicula no encontrado", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "pelicula no encontrada", Toast.LENGTH_SHORT).show();
                                 else {
                                     try {
-                                        etmatricula.setText(String.valueOf(response.getInt("matricula")));
+                                        etcodigoBarras.setText(String.valueOf(response.getInt("codigobarras")));
                                         ettitulo.setText(response.getString("titulo"));
                                         etdirector.setText(response.getString("director"));
                                         etaño.setText(String.valueOf(response.getInt("año")));
-                                        etactores.setText(response.getString("actores"));
-                                        etrating.setText(String.valueOf(response.getInt("rating")));
+                                        etgenero.setText(response.getString("genero"));
                                         etdescrpcion.setText(response.getString("descripcion"));
+                                        adapter.clear();
+                                        lvmovies.setAdapter(adapter);
                                         listMovies();
+
                                     } catch (JSONException e) {
-                                     Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_LONG).show();
-                                        
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             }
@@ -98,7 +97,7 @@ public  class MainActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                               Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, "inserte un codigo de barras", Toast.LENGTH_SHORT).show();
                             }
                         }
                 );
@@ -110,52 +109,57 @@ public  class MainActivity extends AppCompatActivity {
         btnGuardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                JSONObject peliculass = new JSONObject();
-                try {
-                    peliculass.put("titulo", ettitulo.getText().toString());
-                    peliculass.put("director", etdirector.getText().toString());
-                    peliculass.put("año", etaño.getText().toString());
-                    peliculass.put("actores", etdirector.getText().toString());
-                    peliculass.put("rating", etrating.getText().toString());
-                    peliculass.put("descripcion", etdescrpcion.getText().toString());
-                    peliculass.put("matricula", etmatricula.getText().toString());
-                }catch (JSONException error){
-                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                if (etcodigoBarras.getText().toString().isEmpty()){
+                    Toast.makeText(MainActivity.this, "Por favor lene los campos", Toast.LENGTH_SHORT).show();
+                }else{
+                    JSONObject movie = new JSONObject();
+                    try {
+                        movie.put("codigobarras", etcodigoBarras.getText().toString());
+                        movie.put("titulo", ettitulo.getText().toString());
+                        movie.put("director",etdirector.getText().toString());
+                        movie.put("año", etaño.getText().toString());
+                        movie.put("genero", etgenero.getText().toString());
+                        movie.put("descripcion", etdescrpcion.getText().toString());
+
+
+                    } catch (JSONException e) {
+                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.POST,
+                            url +"insertar",
+                            movie,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        if (response.getString("status").equals("Movie insertada")) {
+                                            Toast.makeText(MainActivity.this, "Pelicula Insertada!", Toast.LENGTH_SHORT).show();
+                                            etcodigoBarras.setText("");
+                                            ettitulo.setText("");
+                                            etdirector.setText("");
+                                            etaño.setText("");
+                                            etgenero.setText("");
+                                            etdescrpcion.setText("");
+                                            adapter.clear();
+                                            lvmovies.setAdapter(adapter);
+                                            listMovies();
+                                        }
+                                    }catch (JSONException e) {
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                    );
+                    colaPeticiones.add(jsonObjectRequest);
                 }
-                JsonObjectRequest salvar = new JsonObjectRequest(
-                        Request.Method.POST,
-                        url+"insertar",
-                        peliculass,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                //Toast.makeText(MainActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                                try {
-                                    if (response.getString("status").equals("Obra Guardada"))
-                                        Toast.makeText(MainActivity.this, "¡Obra Guardada con exito", Toast.LENGTH_SHORT).show();
-                                    ettitulo.setText("");
-                                    etdirector.setText("");
-                                    etaño.setText("");
-                                    etactores.setText("");
-                                    etrating.setText("");
-                                    etdescrpcion.setText("");
-                                    etmatricula.setText("");
-                                    origenDatos.clear();
-                                    adapter.clear();
-                                    listMovies();
-                                } catch (JSONException e){
-                                    Toast.makeText(MainActivity.this,"PELI GUARDADA", Toast.LENGTH_SHORT).show();
-                                }listMovies();
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, "PELI GUARDADA", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
-                colaPeticiones.add(salvar);
             }
         });
 
@@ -165,12 +169,32 @@ public  class MainActivity extends AppCompatActivity {
         btnActualizar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (etmatricula.getText().toString().isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Primero use el BOTÓN BUSCAR!", Toast.LENGTH_SHORT).show();
+                if (etcodigoBarras.getText().toString().isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Ingrese el codigo de barras", Toast.LENGTH_SHORT).show();
                 } else {
-                    JSONObject peliupdate = new JSONObject();
+                    JSONObject movies = new JSONObject();
                     try {
-                        peliupdate.put("numcampeon", etmatricula.getText().toString());
+                        movies.put("codigobarras", etcodigoBarras.getText().toString());
+
+                        if (!ettitulo.getText().toString().isEmpty()) {
+                            movies.put("titulo", ettitulo.getText().toString());
+                        }
+
+                        if (!etdirector.getText().toString().isEmpty()) {
+                            movies.put("director", etdirector.getText().toString());
+                        }
+
+                        if (!etaño.getText().toString().isEmpty()) {
+                            movies.put("año", etaño.getText().toString());
+                        }
+
+                        if (!etgenero.getText().toString().isEmpty()) {
+                            movies.put("genero", Float.parseFloat(etgenero.getText().toString()));
+                        }
+
+                        if (!etdescrpcion.getText().toString().isEmpty()) {
+                            movies.put("descripcion", etdescrpcion.getText().toString());
+                        }
 
 
 
@@ -179,31 +203,30 @@ public  class MainActivity extends AppCompatActivity {
                     }
                     JsonObjectRequest actualizar = new JsonObjectRequest(
                             Request.Method.PUT,
-                            url + "actualizar/" + etmatricula.getText().toString(),
-                            peliupdate,
+                            url + "actualizar/" + etcodigoBarras.getText().toString(),
+                            movies,
                             new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
                                     try {
-                                        if (response.getString("status").equals("peli Actualizada")) {
-                                            Toast.makeText(MainActivity.this, " peli actualizada!", Toast.LENGTH_SHORT).show();
-                                            etmatricula.setText("");
+                                        if (response.getString("status").equals("Movie actualizada")) {
+                                            Toast.makeText(MainActivity.this, "Movie actualizada", Toast.LENGTH_SHORT).show();
+                                            etcodigoBarras.setText("");
                                             ettitulo.setText("");
                                             etdirector.setText("");
                                             etaño.setText("");
-                                            etactores.setText("");
-                                            etrating.setText("");
+                                            etgenero.setText("");
                                             etdescrpcion.setText("");
-                                            origenDatos.clear();
                                             adapter.clear();
-
+                                            lvmovies.setAdapter(adapter);
+                                            listMovies();
                                         } else if (response.getString("status").equals("Not Found")) {
-                                            Toast.makeText(MainActivity.this, "Campeón no encontrado", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(MainActivity.this, "Movie no encontrada", Toast.LENGTH_SHORT).show();
                                         }
 
                                     } catch (JSONException e) {
                                         Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }listMovies();
+                                    }
                                 }
                             },
                             new Response.ErrorListener() {
@@ -218,96 +241,39 @@ public  class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-/*
-        btnActualizar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                JSONObject actualizar = new JSONObject();
-                try {
-                    actualizar.put("matricula", etmatricula.getText().toString());
-                    actualizar.put("titulo", ettitulo.getText().toString());
-                    actualizar.put("director", etdirector.getText().toString());
-                    actualizar.put("año", etaño.getText().toString());
-                    actualizar.put("actores", etactores.getText().toString());
-                    actualizar.put("rating", etrating.getText().toString());
-                    actualizar.put("descripcion", etdescrpcion.getText().toString());
-
-                }catch(JSONException error){
-                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
-                }
-                JsonObjectRequest actualizapeli = new JsonObjectRequest(
-                        Request.Method.PUT,
-                        url + "actualizar/" + etmatricula.getText().toString(),
-                        9actualizar,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    if (response.getString("status").equals("Obra Actualizada"))
-                                        Toast.makeText(MainActivity.this, "Obra Actualizada exitosamente", Toast.LENGTH_SHORT).show();
-                                    etmatricula.setText("");
-                                    ettitulo.setText("");
-                                    etdirector.setText("");
-                                    etaño.setText("");
-                                    etactores.setText("");
-                                    etrating.setText("");
-                                    etdescrpcion.setText("");
-                                    origenDatos.clear();
-                                    adapter.clear();
-
-                                } catch (JSONException e) {
-                                    Toast.makeText(MainActivity.this, "Error al actualizar", Toast.LENGTH_SHORT).show();
-                                }
-                                listMovies();;
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
-                colaPeticiones.add(actualizapeli);
-            }
-        });
-
-*/
-
-
-
-
-
-
+        //Button Delete
         btnEliminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (etmatricula.getText().toString().isEmpty()) {
-                    Toast.makeText(MainActivity.this, "ingrese la matricula", Toast.LENGTH_SHORT).show();
+                if (etcodigoBarras.getText().toString().isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Ingrese el codigo de barras", Toast.LENGTH_SHORT).show();
                 } else {
                     JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                             Request.Method.DELETE,
-                            url + "delete/" + etmatricula.getText().toString(),
+                            url + "eliminar/" + etcodigoBarras.getText().toString(),
                             null,
                             new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
                                     try {
-                                        if (response.getString("status").equals("peli eliminada")) {
-                                            Toast.makeText(MainActivity.this, "pelicula eliminada!", Toast.LENGTH_SHORT).show();
-                                            etmatricula.setText("");
+                                        if (response.getString("status").equals("Movie eliminada")) {
+                                            Toast.makeText(MainActivity.this, "Movie eliminada", Toast.LENGTH_SHORT).show();
+                                            etcodigoBarras.setText("");
+                                            ettitulo.setText("");
+                                            etdirector.setText("");
+                                            etaño.setText("");
+                                            etgenero.setText("");
+                                            etdescrpcion.setText("");
                                             adapter.clear();
                                             lvmovies.setAdapter(adapter);
                                             listMovies();
                                         } else if (response.getString("status").equals("Not Found")) {
-                                            Toast.makeText(MainActivity.this, "peli no encontrada", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(MainActivity.this, "Movie no encontrada", Toast.LENGTH_SHORT).show();
                                         }
 
                                     } catch (JSONException e) {
                                         Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }listMovies();
+                                    }
                                 }
                             },
                             new Response.ErrorListener() {
@@ -324,41 +290,8 @@ public  class MainActivity extends AppCompatActivity {
 
 
 
+
     }
-
-/*
-        btnEliminar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                JsonObjectRequest eliminapeli = new JsonObjectRequest(
-                        Request.Method.DELETE,
-                        url+"delete/"+etmatricula.getText().toString(),
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                if (response.has("status")) {
-                                    Toast.makeText(MainActivity.this, "Pelicula eliminada", Toast.LENGTH_SHORT).show();
-                                } else if (response.getString("status").equals("Not Found")) {
-                                    Toast.makeText(MainActivity.this, "Pelicula no encontrada", Toast.LENGTH_SHORT).show();
-                                }
-
-                                } catch (JSONException e) {
-                                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, "Puede que no exista el id , error al eliminar.", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
-                colaPeticiones.add(eliminapeli);
-            }
-        });*/
 
 
 
@@ -382,17 +315,15 @@ public  class MainActivity extends AppCompatActivity {
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        origenDatos.clear();
-                        //Toast.makeText(MainActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
-                        for(int i = 0;i < response.length(); i++){
+                        for(int i = 0 ; i<response.length();i++){
                             try {
-                                Integer  matricula = response.getJSONObject(i).getInt("matricula");
-                                String titulo =response.getJSONObject(i).getString("titulo");
-                                Integer  año = response.getJSONObject(i).getInt("año");
-                                String actores =response.getJSONObject(i).getString("actores");
-
-                                origenDatos.add(matricula+" - "+ titulo + " - "+año+" - "+actores);
+                                String codigobarras = response.getJSONObject(i).getString("codigobarras");
+                                String titulo = response.getJSONObject(i).getString("titulo");
+                                String genero = response.getJSONObject(i).getString("genero");
+                                String descripcion = response.getJSONObject(i).getString("descripcion");
+                                origenDatos.add(codigobarras+" -> "+titulo+" -> "+genero+descripcion);
                             } catch (JSONException e) {
+
                             }
                         }
                         adapter = new ArrayAdapter<>(MainActivity.this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, origenDatos);
@@ -402,16 +333,13 @@ public  class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, error.getMessage(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
         colaPeticiones.add(jsonArrayRequest);
     }
 }
-
-
-
 
 
 
