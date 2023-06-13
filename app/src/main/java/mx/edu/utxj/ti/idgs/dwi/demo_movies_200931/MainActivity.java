@@ -143,7 +143,7 @@ public  class MainActivity extends AppCompatActivity {
                                             etdescrpcion.setText("");
                                             adapter.clear();
                                             lvmovies.setAdapter(adapter);
-                                            listMovies();
+                                            
                                         }
                                     }catch (JSONException e) {
                                         Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -159,6 +159,7 @@ public  class MainActivity extends AppCompatActivity {
 
                     );
                     colaPeticiones.add(jsonObjectRequest);
+                    listMovies();
                 }
             }
         });
@@ -219,7 +220,7 @@ public  class MainActivity extends AppCompatActivity {
                                             etdescrpcion.setText("");
                                             adapter.clear();
                                             lvmovies.setAdapter(adapter);
-                                            listMovies();
+                                            
                                         } else if (response.getString("status").equals("Not Found")) {
                                             Toast.makeText(MainActivity.this, "Movie no encontrada", Toast.LENGTH_SHORT).show();
                                         }
@@ -237,10 +238,15 @@ public  class MainActivity extends AppCompatActivity {
                             }
                     );
                     colaPeticiones.add(actualizar);
+                    listMovies();
                 }
             }
         });
+        
+        
 
+        
+        
         //Button Delete
         btnEliminar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -266,7 +272,7 @@ public  class MainActivity extends AppCompatActivity {
                                             etdescrpcion.setText("");
                                             adapter.clear();
                                             lvmovies.setAdapter(adapter);
-                                            listMovies();
+                                            
                                         } else if (response.getString("status").equals("Not Found")) {
                                             Toast.makeText(MainActivity.this, "Movie no encontrada", Toast.LENGTH_SHORT).show();
                                         }
@@ -284,6 +290,7 @@ public  class MainActivity extends AppCompatActivity {
                             }
                     );
                     colaPeticiones.add(jsonObjectRequest);
+                    listMovies();
                 }
             }
         });
@@ -292,9 +299,6 @@ public  class MainActivity extends AppCompatActivity {
 
 
     }
-
-
-
 
 
 
